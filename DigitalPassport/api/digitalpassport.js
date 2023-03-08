@@ -4,6 +4,7 @@ const timehelper = require("../lib/timehelper");
 
 exports.digitalPassportCheckIn = (req, res, next) => { 
     (async () => {
+      // the required request
       let param = [{
         name: 'spice_id',
         rules: ['required']
@@ -20,6 +21,7 @@ exports.digitalPassportCheckIn = (req, res, next) => {
   
       req.validate(req, param)
 
+      //Get User Id
       let user = await req.queries('user').get_user_by_spiceid(req.db,req.body.spice_id)
       if(!user){
         res.error("Spice_id tidak terdaftar")
@@ -39,7 +41,7 @@ exports.digitalPassportCheckIn = (req, res, next) => {
           user_data[i].spice_id = req.lib('password').encryptAes256iv(user_data[i].spice_id)
         }
       }
-
+      //Format checkin_date into a proper date
       let checkin_date = req.lib("timehelper").format_ymd_his(req.body.checkin_date)
       
       let data = {
@@ -48,7 +50,7 @@ exports.digitalPassportCheckIn = (req, res, next) => {
         venue_name : req.body.venue_name,
         checkin_date : checkin_date
       }
-      //Cek Logging check-in
+      //Cek Logging check-in, if the user have checked in before to not overused the database
       let cek_cekin = await req.queries('dp_checkin').findCheckin(req.db,spice_id,checkin_date)
       let checkin_id= ""
       if(!cek_cekin){
@@ -69,6 +71,7 @@ exports.digitalPassportCheckIn = (req, res, next) => {
 
 exports.digitalPassportRedeem = (req, res, next) => { 
   (async () => {
+    // the required request
     let param = [{
       name: 'spice_id',
       rules: ['required']
@@ -85,7 +88,7 @@ exports.digitalPassportRedeem = (req, res, next) => {
 
     req.validate(req, param)
     
-   
+   //Get User ID
     let user = await req.queries('user').get_user_by_spiceid(req.db,req.body.spice_id)
     if(!user){
       res.error("Spice_id tidak terdaftar")
@@ -94,6 +97,7 @@ exports.digitalPassportRedeem = (req, res, next) => {
     let spice_id = req.body.spice_id
     let redeem_date = req.lib("timehelper").format_ymd_his(req.body.redeem_date)
     
+    //To Check if the user have checkin before, you can't redeem the item without checking in before
     let checkin_id = await req.queries('dp_redeem').findCheckinRedeem(req.db,req.body.checkin_id,spice_id)
     
     if(!checkin_id){
@@ -107,7 +111,7 @@ exports.digitalPassportRedeem = (req, res, next) => {
       reward_name : req.body.reward_name,
       redeem_date : redeem_date
     }
-
+    //To check if the user have redeemed before, you can't redeem twice in the same day of event
     let cek_redeem = await req.queries('dp_redeem').findRedeem(req.db,spice_id,redeem_date)
     let redeem = ""
     if(!cek_redeem){ 
@@ -118,13 +122,6 @@ exports.digitalPassportRedeem = (req, res, next) => {
 
     let encrypt_spice = req.lib('password').encryptAes256iv(spice_id);
     
-    // //get allacess token
-    // let allacess_token = await req.queries('allacess_token').getAllAcessToken(req.db,spice_id)
-    //   if(!allacess_token){
-    //     res.error("No Token Id Found")
-    //     return;
-    //   }
-
     res.success({
       code : 200,
       message : "Success",
@@ -152,14 +149,17 @@ exports.getDigitalPassportBenefit = (req, res, next) => {
         //get user tier
         let tier = await req.queries('user').getLatestTIer(req.db,user_id)
         let user_tier = tier.user_tier
-
+        //get list benefit from database , previously inputted in CMS
         let benefit = await req.queries('dp_benefit').getDigitalPassportBenefit(req.db)
         if(benefit){
           for(let i in benefit){
+            //convert stored images to an AWS url storage for front-end integration
             benefit[i].dataValues.desktop_image_banner = myConfig.aws_url + "uploads/images/digitalpassport/i/" + benefit[i].dataValues.desktop_image_banner
             benefit[i].dataValues.mobile_image_banner = myConfig.aws_url + "uploads/images/digitalpassport/i/" + benefit[i].dataValues.mobile_image_banner
+            //Give marking if the user have redeemed it
             benefit[i].dataValues.is_redeem = false;
 
+            //validation of user tier , each tier have it's own benefit and if you are below the required tier you can't redeem the benefit
             if(user_tier == "bronze"){
               if(benefit[i].dataValues.tier == "bronze"){
                 benefit[i].dataValues.is_redeem = true;
@@ -229,10 +229,12 @@ exports.getDetailDigitalPassportBenefit = (req, res, next) => {
     }   
     
     let title = req.body.title
+    //Get detail benefit from it's title, do this when you have a validation of multiplied benefit title. previously inputted in CMS
     let benefit = await req.queries('dp_benefit').getDetailDigitalPassportBenefit(req.db,title)
     let tier = await req.queries('user').getLatestTIer(req.db,user_id)
     let user_tier = tier.user_tier
 
+    //check if benefit exist
     if(benefit == "" ||
        benefit == undefined ||
        benefit == "undefined"){
@@ -242,15 +244,18 @@ exports.getDetailDigitalPassportBenefit = (req, res, next) => {
 
     if(benefit){
       for(let i in benefit){
+        //convert stored images to an AWS url storage for front-end integration
         benefit[i].dataValues.desktop_image_banner = myConfig.aws_url + "uploads/images/digitalpassport/i/" + benefit[i].dataValues.desktop_image_banner
         benefit[i].dataValues.mobile_image_banner = myConfig.aws_url + "uploads/images/digitalpassport/i/" + benefit[i].dataValues.mobile_image_banner
         if(benefit[i].dataValues.tnc_image_header != null){
         benefit[i].dataValues.tnc_image_header = myConfig.aws_url + "uploads/images/digitalpassport/i/" + benefit[i].dataValues.tnc_image_header
         }
+        //Convert datetime
         benefit[i].dataValues.createdate = timehelper.format_ymd_his(benefit[i].dataValues.createdate)
         benefit[i].dataValues.updatedate = timehelper.format_ymd_his(benefit[i].dataValues.updatedate)
         benefit[i].dataValues.is_redeem = true;
       
+      //validation of user tier , each tier have it's own benefit and if you are below the required tier you can't redeem the benefit
       if(user_tier == "bronze"){
         if(benefit[i].dataValues.tier == "silver" ||
            benefit[i].dataValues.tier == "gold" || 
@@ -301,12 +306,14 @@ exports.getDigitalPassportEvent = (req, res, next) => {
       }   
       let date_now = new Date()
       let today =  await req.lib('timehelper').format_ymd_start(date_now)
+      //get list event from database , previously inputted in CMS . with validation of >= today
       let event = await req.queries('dp_event').getDigitalPassportEvent(req.db,today)
 
       if(event){
         for(let i in event){
-          // event[i].dataValues.icon = myConfig.aws_url + "uploads/images/digitalpassport/i/" + event[i].dataValues.icon
+          //convert stored images to an AWS url storage for front-end integration
           event[i].dataValues.image_banner = myConfig.aws_url + "uploads/images/digitalpassport/i/" + event[i].dataValues.image_banner
+          //convert date
           event[i].dataValues.event_date = req.lib("timehelper").format_ymd_his(event[i].dataValues.event_date)
           event[i].dataValues.event_end_date = req.lib("timehelper").format_ymd_his(event[i].dataValues.event_end_date)
           event[i].dataValues.createdate = req.lib("timehelper").format_ymd_his(event[i].dataValues.createdate)
@@ -339,12 +346,14 @@ exports.getDigitalPassportRedeemHistory = (req, res, next) => {
       } else {
           return res.error("Please Login first")
       }   
+      //For pagination, you can request the limit & offset. the default value for limit is 10 and offset is 0
       let limit = req.body.limit || 10;
       let offset = req.body.offset || 0;
       let history = await req.queries('dp_checkin').getHistoryCheckIn(req.db,req,limit,offset,user.spice_id)
       let total_history = await req.queries('dp_checkin').findHistory(req.db,user.spice_id)
       let count = total_history.length
       
+      //Check if the user have ever check-in
       if(!history){
         return res.error("No Data Avail")
       }else {
