@@ -1,0 +1,100 @@
+extends layout
+
+block content
+    <ol class="breadcrumb">
+        <li>Main Navigation</li>
+        <li>Digital Passport Event</li>
+        if(data.id != undefined)
+            <li>#{data.title}</li>
+        else
+            <li>New</li>
+        <li class="breadcrumb__back"><a href="/cms/dp_event">Go Back</a></li>
+    </ol>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-colonies">
+                    <div class="panel-heading">
+                        if(data.id != undefined)
+                            <div class="panel-title">Detail Digital Passport Event</div>
+                        else
+                            <div class="panel-title">New Digital Passport Event</div>
+                    </div>
+                    <div class="panel-body">
+                        <form id="form_dp_event" class="ajax parsley-validate" action="/cms/dp_event/manage" redir-url="/cms/dp_event">
+                            <input type="hidden" id="id" name="id" value="#{data.id}" />
+                            <input type="hidden" id="marlboro_csrf" name="#{csrf_token_name}" value="#{csrf_token}" />
+
+                            <div class="form-group">
+                                <label for="title" class="control-label">Event Title</label>
+                                <input type="text" name="title" class="form-control" id="title" value="#{data.title}">
+                            </div>
+
+                            <div class="form-group short_desc-wysiwyg">
+                                <label for="desc" class="control-label">Short Description</label>
+                                <div id="editor" class="quill-editor" data-copyto="#wysiwyg_desc">#{data.short_desc}</div>
+                                <input type="hidden" id="wysiwyg_desc" name="short_desc" value="#{data.short_desc}">
+                            </div>
+
+                            //- <div class="form-group">
+                            //-     <label for="icon" class="control-label">Icon</label>
+                            //-     <div>
+                            //-         <input type="file" name="icon">          
+                            //-         <label><span id="image_name">Choose a file&hellip;</span></label> 
+                            //-         <br>
+                            //-         if data.icon && data.icon != 'undefined'
+                            //-             <a href="#{data.icon}" title="click to enlarge" target="_blank"><img src="#{data.icon}" height='200' width='200' class="preview-image"/></a> 
+                            //-     </div>
+                            //- </div>
+
+                            <div class="form-group">
+                                <label for="image_banner" class="control-label">Image Banner</label>
+                                <div>
+                                    <input type="file" name="image_banner">          
+                                    <label><span id="image_name">Choose a file&hellip;</span></label> 
+                                    <br>
+                                    if data.image_banner && data.image_banner != 'undefined'
+                                        <a href="#{data.image_banner}" title="click to enlarge" target="_blank"><img src="#{data.image_banner}" height='200' width='200' class="preview-image"/></a> 
+                                </div>
+                            </div>
+
+                            <div class = "form-group event_date">
+                                <label for="event_date" class="control-label">Event Start Date</label> <br>
+                                <input type="text" name="event_date" class="form-control datetimepicker" id="event_date" value="#{data.event_date}">
+                            </div>
+
+                            <div class = "form-group event_end_date">
+                                <label for="event_end_date" class="control-label">Event End Date</label> <br>
+                                <input type="text" name="event_end_date" class="form-control datetimepicker" id="event_end_date" value="#{data.event_end_date}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="event_location" class="control-label">Event Location</label>
+                                <input type="text" name="event_location" class="form-control" id="event_location" value="#{data.event_location}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="status" class="control-label">Status</label>
+                                <div>
+                                    <select name="status" type="text" class="form-control" id="status" style="width:100%">
+                                        option(value="Active", selected=(data.status == "Active")) Active
+                                        option(value="Inactive", selected=(data.status == "Inactive")) Inactive
+                                    </select>
+                                </div>
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="clearfix">
+                            <div class="pull-right">
+                                <button id="fsubmit" type="button" class="btn btn-colonies">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/views/dp_event_form.js"></script>

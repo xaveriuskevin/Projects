@@ -1,0 +1,114 @@
+extends layout
+
+block content
+    <ol class="breadcrumb">
+        <li>Main Navigation</li>
+        <li>Digital Passport Benefit</li>
+        if(data.id != undefined)
+            <li>#{data.title}</li>
+        else
+            <li>New</li>
+        <li class="breadcrumb__back"><a href="/cms/dp_benefit">Go Back</a></li>
+    </ol>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-colonies">
+                    <div class="panel-heading">
+                        if(data.id != undefined)
+                            <div class="panel-title">Detail Digital Passport Benefit</div>
+                        else
+                            <div class="panel-title">New Digital Passport Benefit</div>
+                    </div>
+                    <div class="panel-body">
+                        <form id="form_dp_benefit" class="ajax parsley-validate" action="/cms/dp_benefit/manage" redir-url="/cms/dp_benefit">
+                            <input type="hidden" id="id" name="id" value="#{data.id}" />
+                            <input type="hidden" id="marlboro_csrf" name="#{csrf_token_name}" value="#{csrf_token}" />
+
+                            <div class="form-group">
+                                <label for="title" class="control-label">Benefit Title</label>
+                                <input type="text" name="title" class="form-control" id="title" value="#{data.title}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="short_desc" class="control-label">Short Description</label>
+                                <div id="editor-short_desc" class="quill-editor" data-copyto="#wysiwyg_desc_short_desc">#{data.short_desc}</div>
+                                <input type="hidden" id="wysiwyg_desc_short_desc" name="short_desc" value="#{data.short_desc}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="desktop_image_banner" class="control-label">Desktop Image Banner</label>
+                                <div>
+                                    <input type="file" name="desktop_image_banner">          
+                                    <label><span id="image_name">Choose a file&hellip;</span></label> 
+                                    <br>
+                                    if data.desktop_image_banner && data.desktop_image_banner != 'undefined'
+                                        <a href="#{data.desktop_image_banner}" title="click to enlarge" target="_blank"><img src="#{data.desktop_image_banner}" height='200' width='200' class="preview-image"/></a> 
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="mobile_image_banner" class="control-label">Mobile Image Banner</label>
+                                <div>
+                                    <input type="file" name="mobile_image_banner">          
+                                    <label><span id="image_name">Choose a file&hellip;</span></label> 
+                                    <br>
+                                    if data.mobile_image_banner && data.mobile_image_banner != 'undefined'
+                                        <a href="#{data.mobile_image_banner}" title="click to enlarge" target="_blank"><img src="#{data.mobile_image_banner}" height='200' width='200' class="preview-image"/></a> 
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tier" class="control-label">Benefit Tier</label>
+                                <div>
+                                    <select name="tier" type="text" class="form-control" id="tier" style="width:100%">
+                                        option(value="bronze", selected=(data.tier == "bronze")) Bronze
+                                        option(value="silver", selected=(data.tier == "silver")) Silver
+                                        option(value="gold", selected=(data.tier == "gold")) Gold
+                                        option(value="elite red", selected=(data.tier == "elite red")) Elite Red
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group tnc_image_header">
+                                <label for="tnc_image_header" class="control-label">TnC Image Header</label>
+                                <div>
+                                    <input type="file" name="tnc_image_header">          
+                                    <label><span id="image_name">Choose a file&hellip;</span></label> 
+                                    <br>
+                                    if data.tnc_image_header && data.tnc_image_header != 'undefined'
+                                        <a href="#{data.tnc_image_header}" title="click to enlarge" target="_blank"><img src="#{data.tnc_image_header}" height='200' width='200' class="preview-image"/></a> 
+                                </div>
+                            </div>
+
+                            <div class="form-group tnc_long_desc-wysiwyg">
+                                <label for="desc" class="control-label">Tnc Long Description</label>
+                                <div id="editor" class="quill-editor" data-copyto="#wysiwyg_desc2">#{data.tnc_long_desc}</div>
+                                <input type="hidden" id="wysiwyg_desc2" name="tnc_long_desc" value="#{data.tnc_long_desc}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="status" class="control-label">Status</label>
+                                <div>
+                                    <select name="status" type="text" class="form-control" id="status" style="width:100%">
+                                        option(value="Active", selected=(data.status == "Active")) Active
+                                        option(value="Inactive", selected=(data.status == "Inactive")) Inactive
+                                    </select>
+                                </div>
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="clearfix">
+                            <div class="pull-right">
+                                <button id="fsubmit" type="button" class="btn btn-colonies">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/views/dp_benefit_form.js"></script>
