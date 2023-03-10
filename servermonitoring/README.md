@@ -1,4 +1,4 @@
-# Digital Passport
+# Server Monitoring
 This is a project for a certain company.
 Problem : The website sometimes has a severe issues, like bad API call , errors in a weird way. it's usually causes by the CPU , Memory or Disk
 Solution : make a python program to put in CRON, to check the website every certain minutes if it's down or not and check the percentage of the CPU, Memory and disk
